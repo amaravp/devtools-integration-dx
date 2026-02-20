@@ -1,0 +1,524 @@
+<!-- 
+  © 2026 Amara Hulslander. All rights reserved.
+  Not for reuse or redistribution without explicit written permission.
+  Portfolio artifact — contains proprietary UX concepts.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="copyright" content="© 2026 Amara Hulslander. All rights reserved.">
+<meta name="author" content="Amara Hulslander">
+<title>Alexa+ Integration Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+  :root {
+    --bg:#F3F5F8; --surface:#FFFFFF;
+
+    /* Integration colors — darkened for AA contrast on light backgrounds */
+    --api:#006A91;   --api-lt:#E6F5FC; --api-mid:#8DCBE8;
+    --mcp:#4A22A8;   --mcp-lt:#EEE8FF; --mcp-mid:#B8A3F0;
+    --agent:#005C4C; --agent-lt:#E0F5F1; --agent-mid:#7DCBBF;
+
+    --gate:#92400E;  --gate-lt:#FEF3C7; --gate-mid:#F6CC6A;
+    --err:#991B1B;   --err-lt:#FEF2F2;  --err-mid:#FCA5A5;
+    --ai:#5B21B6;    --ai-lt:#F5F3FF;   --ai-mid:#C4B5FD;
+    --hitl:#075985;  --hitl-lt:#E0F2FE; --hitl-mid:#7DD3FC;
+
+    --border:#DDE3EC;
+    --text:#0F1C2E;
+    --body:#3D5166;
+    --muted:#5C6F82; /* darkened from #7A90A8 — now 4.6:1 on white, passes AA */
+
+    --mono:'IBM Plex Mono',monospace;
+    --sans:'IBM Plex Sans',sans-serif;
+
+    /* Type scale for 14" at 100% zoom */
+    --t-xs:10px;
+    --t-sm:11px;
+    --t-md:12px;
+    --t-base:13px;
+    --t-lg:14px;
+    --t-xl:18px;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);font-family:var(--sans);color:var(--text);min-width:320px;}
+
+  /* ── Material icon helper ── */
+  .mi{font-family:'Material Icons';font-size:18px;line-height:1;
+      vertical-align:middle;user-select:none;color:#5C6F82;
+      transition:transform 0.22s ease;}
+  .step-trigger.open .mi.chevron{transform:rotate(180deg);}
+
+  /* ── Header ── */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 28px;border-bottom:1px solid var(--border);
+    background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);
+    position:sticky;top:0;z-index:50;
+    box-shadow:0 1px 4px rgba(15,28,46,0.06);
+    gap:16px;flex-wrap:wrap;
+  }
+  .logo{display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;}
+  .logo-text{font-size:13px;font-weight:600;letter-spacing:-0.2px;white-space:nowrap;color:var(--text);}
+  .logo:hover .logo-text{color:var(--muted);transition:color 0.15s;}
+  .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  .hdr-btn{
+    font-family:var(--sans);font-size:var(--t-sm);font-weight:500;
+    padding:5px 10px;border-radius:6px;cursor:pointer;
+    background:rgba(15,28,46,0.05);border:1px solid var(--border);
+    color:var(--body);letter-spacing:0.3px;
+    transition:background 0.15s,color 0.15s,border-color 0.15s;white-space:nowrap;
+  }
+  .hdr-btn:hover{background:rgba(15,28,46,0.09);color:var(--text);}
+
+  /* ── Canvas ── */
+  .canvas{padding:32px 28px 64px;}
+  /* ── Entry node ── */
+  .entry-wrap{display:flex;justify-content:center;}
+  .entry-node{
+    background:var(--gate-lt);border:1px solid var(--gate-mid);border-radius:9px;
+    padding:13px 24px;text-align:center;width:340px;
+    box-shadow:0 2px 8px rgba(180,83,9,0.07);
+  }
+  .entry-node .eyebrow{font-family:var(--sans);font-size:var(--t-xs);font-weight:700;letter-spacing:0.3px;text-transform:uppercase;color:var(--gate);margin-bottom:4px;}
+  .entry-node .title{font-size:var(--t-base);font-weight:600;color:#92400E;margin-bottom:0;}
+
+  .branch-svg-wrap{width:100%;height:48px;display:block;}
+
+  /* ── Sticky col headers ── */
+  .col-headers{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 16px;
+    position:sticky;top:52px;z-index:40;padding-bottom:6px;background:var(--bg);
+  }
+  .col-hdr{border-radius:7px;padding:8px 12px;}
+  .col-hdr-label{font-size:var(--t-lg);font-weight:700;letter-spacing:-0.2px;margin-bottom:3px;}
+  .col-hdr-sub{font-family:var(--sans);font-size:var(--t-md);font-weight:400;font-style:italic;opacity:0.85;}
+  .col-hdr.api{background:var(--api-lt);color:var(--api);border:1px solid var(--api-mid);}
+  .col-hdr.mcp{background:var(--mcp-lt);color:var(--mcp);border:1px solid var(--mcp-mid);}
+  .col-hdr.agt{background:var(--agent-lt);color:var(--agent);border:1px solid var(--agent-mid);}
+
+  /* ── Step blocks ── */
+  .step-block{margin:6px 0 0;}
+  .step-trigger{
+    border-radius:9px;cursor:pointer;
+    background:var(--surface);border:1px solid var(--border);
+    transition:box-shadow 0.15s;user-select:none;overflow:hidden;
+  }
+  .step-trigger:hover{box-shadow:0 2px 8px rgba(15,28,46,0.07);}
+  .step-trigger.open{border-color:rgba(15,28,46,0.15);box-shadow:0 2px 10px rgba(15,28,46,0.08);}
+
+  .trigger-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;border-bottom:1px solid transparent;transition:border-color 0.2s;
+  }
+  .step-trigger.open .trigger-bar{border-bottom-color:var(--border);}
+  .trigger-step-num{font-family:var(--sans);font-size:var(--t-sm);font-weight:600;letter-spacing:0.1px;text-transform:uppercase;color:var(--muted);}
+
+  .step-cards{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;
+    max-height:0;opacity:0;overflow:hidden;
+    transition:max-height 0.38s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease;
+  }
+  .step-trigger.open .step-cards{max-height:1800px;opacity:1;}
+
+  /* ── Node cards ── */
+  .node{padding:14px;background:var(--surface);}
+  .node+.node{border-left:1px solid var(--border);}
+  .node .eyebrow{font-family:var(--sans);font-size:var(--t-xs);font-weight:700;letter-spacing:0.3px;text-transform:uppercase;margin-bottom:5px;}
+  .node.api .eyebrow{color:var(--api);}
+  .node.mcp .eyebrow{color:var(--mcp);}
+  .node.agent .eyebrow{color:var(--agent);}
+  .node .jtbd{font-size:var(--t-base);font-weight:600;font-style:italic;color:var(--text);margin-bottom:6px;line-height:1.4;}
+  .node .solution{font-size:var(--t-md);color:var(--body);line-height:1.55;}
+
+  /* ── Overlays ── */
+  .failure-block,.ai-block{display:none;margin-top:10px;border-radius:5px;overflow:hidden;}
+  .failure-block{border:1px solid var(--err-mid);}
+  .ai-block{border:1px solid var(--ai-mid);}
+
+  .failure-if,.failure-mit,.failure-cx,.failure-cx-mit{padding:7px 9px;font-size:var(--t-sm);line-height:1.5;}
+  .failure-if{background:var(--err-lt);color:var(--err);border-bottom:1px solid var(--err-mid);}
+  .failure-mit{background:var(--surface);color:var(--body);}
+  .failure-cx{background:#FFF5F5;color:#7F1D1D;border-top:1px dashed var(--err-mid);}
+  .failure-cx-mit{background:var(--surface);color:var(--body);border-top:1px solid var(--err-mid);}
+
+  .ai-decision,.ai-hitl{padding:7px 9px;font-size:var(--t-sm);line-height:1.5;}
+  .ai-decision{background:var(--ai-lt);color:var(--ai);border-bottom:1px solid var(--ai-mid);}
+  .ai-hitl{background:var(--hitl-lt);color:var(--hitl);}
+
+  .fb-label{font-style:normal;font-weight:700;font-size:9px;font-family:var(--mono);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:2px;color:var(--err);opacity:0.65;}
+  .ai-label{font-style:normal;font-weight:700;font-size:9px;font-family:var(--mono);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:2px;opacity:0.65;}
+  .ai-label.decision{color:var(--ai);}
+  .ai-label.hitl{color:var(--hitl);}
+
+  body.show-failures .failure-block{display:block;}
+  body.show-ai .ai-block{display:block;}
+
+  /* ── Unified step connector — same for steps 1–3 and lifecycle ── */
+  .step-connector{
+    display:flex;align-items:center;justify-content:center;
+    height:28px;color:#5C6F82;font-size:20px;
+  }
+
+  /* ── Release lifecycle ── */
+  .lifecycle-wrap{margin-top:0;}
+  .lifecycle-label{
+    display:flex;align-items:center;gap:10px;
+    font-family:var(--sans);font-size:var(--t-xs);font-weight:700;
+    letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);
+    margin-bottom:10px;
+  }
+  .lifecycle-label::before,.lifecycle-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .lc-row{
+    display:flex;align-items:center;gap:20px;
+    background:var(--surface);border:1px solid var(--border);border-radius:9px;
+    padding:11px 16px;margin:6px 0 0;
+  }
+  .lc-step-label{
+    font-family:var(--sans);font-size:var(--t-sm);font-weight:600;
+    letter-spacing:0.1px;text-transform:uppercase;color:var(--muted);
+    white-space:nowrap;min-width:130px;
+  }
+  .lc-step-jtbd{font-size:var(--t-md);font-weight:600;color:var(--text);line-height:1.4;font-style:italic;}
+
+  /* ── Responsive: narrow breakpoint ~900px ── */
+  @media (max-width:900px){
+    body{min-width:0;}
+
+    header{padding:10px 16px;}
+
+    .canvas{padding:20px 14px 48px;}
+
+    .entry-node{width:100%;}
+
+    /* Col headers stack */
+    .col-headers{
+      grid-template-columns:1fr;gap:6px;
+      position:relative;top:0;
+      margin-bottom:4px;
+    }
+
+    /* Step cards stack vertically */
+    .step-cards{grid-template-columns:1fr;}
+    .node+.node{border-left:none;border-top:1px solid var(--border);}
+
+    /* SVG branch hidden — not meaningful on single column */
+    .branch-svg-wrap{display:none;}
+
+    /* Lifecycle rows stack label above JTBD */
+    .lc-row{flex-direction:column;align-items:flex-start;gap:4px;}
+    .lc-step-label{min-width:unset;}
+
+    /* Header buttons wrap and shrink */
+    .hdr-btn{font-size:9px;padding:4px 8px;}
+  }
+
+  @media (max-width:600px){
+    .logo-text{font-size:12px;}
+    .hdr-btn{font-size:9px;padding:4px 7px;}
+    .page-title h1{font-size:16px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="resetAll()">
+    <span class="logo-text">Alexa+ Integration Experience</span>
+  </div>
+  <div class="header-right">
+    <button class="hdr-btn" id="expandAllBtn" onclick="toggleAll()">Expand all</button>
+    <button class="hdr-btn" id="aiBtn" onclick="toggleAI()">Show agent decisions</button>
+    <button class="hdr-btn" id="failureBtn" onclick="toggleFailures()">Show failure modes</button>
+  </div>
+</header>
+
+<div class="canvas">
+
+  <div class="entry-wrap">
+    <div class="entry-node">
+      <div class="eyebrow">Entry Point</div>
+      <div class="title">Choose your integration type</div>
+    </div>
+  </div>
+
+  <svg class="branch-svg-wrap" viewBox="0 0 1060 48" preserveAspectRatio="none">
+    <line x1="530" y1="0"  x2="530" y2="16" stroke="#5C6F82" stroke-width="1.5"/>
+    <line x1="177" y1="16" x2="883" y2="16" stroke="#5C6F82" stroke-width="1"/>
+    <line x1="177" y1="16" x2="177" y2="48" stroke="#5C6F82" stroke-width="1.5"/>
+    <line x1="530" y1="16" x2="530" y2="48" stroke="#5C6F82" stroke-width="1.5"/>
+    <line x1="883" y1="16" x2="883" y2="48" stroke="#5C6F82" stroke-width="1.5"/>
+  </svg>
+
+  <div class="col-headers">
+    <div class="col-hdr api"><div class="col-hdr-label">API Integration</div><div class="col-hdr-sub">"I have a service. I want Alexa+ to call it."</div></div>
+    <div class="col-hdr mcp"><div class="col-hdr-label">MCP</div><div class="col-hdr-sub">"I have capabilities. I want Alexa+ to discover them."</div></div>
+    <div class="col-hdr agt"><div class="col-hdr-label">Agent Relay</div><div class="col-hdr-sub">"I have an agent. I want Alexa+ to hand off to it."</div></div>
+  </div>
+
+  <!-- ═══ STEP 1 · CONNECT ═══ -->
+  <div class="step-block">
+    <div class="step-trigger" onclick="toggleStep(this)" id="s1">
+      <div class="trigger-bar">
+        <span class="trigger-step-num">Step 1 · Connect</span>
+        <span class="material-icons mi chevron">expand_more</span>
+      </div>
+      <div class="step-cards">
+        <div class="node api">
+          <div class="eyebrow">Step 1 · Connect · API</div>
+          <div class="jtbd">"I need to know my service is reachable before I invest anything."</div>
+          <div class="solution">Auto-detect enables instant connection. The developer verifies the result, rather than configuring.</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System auto-detects the service connection and surfaces the result without developer input.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer verifies the detected connection result before proceeding.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">If this fails</span>High friction and ambiguous output causes abandonment.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>Auto-detect gives immediate feedback. If connection fails, developer is provided with a temporarily inferred scaffold to continue work.</div>
+          </div>
+        </div>
+        <div class="node mcp">
+          <div class="eyebrow">Step 1 · Connect · MCP</div>
+          <div class="jtbd">"I need this system to discover what my tools do so I do not have to explain each one."</div>
+          <div class="solution">The system reads the tool manifest and surfaces what it found — shifting the mental model from "configure" to "confirm."</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System reads the tool manifest and infers what the tools do. It then generates a structured summary.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer confirms or updates the inferred tool summary before it is established as the foundation.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">If this fails</span>Auto-discovery fails and burdens the developer with manual work.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>System shows exactly what was found before asking the developer to do anything, making partial discovery visible and recoverable.</div>
+          </div>
+        </div>
+        <div class="node agent">
+          <div class="eyebrow">Step 1 · Connect · Relay</div>
+          <div class="jtbd">"I need to establish CX boundaries so Alexa+ knows when to hand off and take back tasks."</div>
+          <div class="solution">The system maps partner and Alexa+ agent scope and handoffs.</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System generates scope suggestions, providing a starting point the developer can accept, adjust, or override.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer must approve or negotiate the scope direction before proceeding. CX requires explicit sign-off.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">If this fails</span>Scope is undefined or erroneously inferred, making every downstream step harder to validate.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>Scope suggestions are provided, and developer must approve or negotiate direction before proceeding.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-connector">↓</div>
+
+  <!-- ═══ STEP 2 · BUILD ═══ -->
+  <div class="step-block">
+    <div class="step-trigger" onclick="toggleStep(this)" id="s2">
+      <div class="trigger-bar">
+        <span class="trigger-step-num">Step 2 · Build</span>
+        <span class="material-icons mi chevron">expand_more</span>
+      </div>
+      <div class="step-cards">
+        <div class="node api">
+          <div class="eyebrow">Step 2 · Build · API</div>
+          <div class="jtbd">"I need this system to understand my service well enough to call it correctly without manual intervention."</div>
+          <div class="solution">Capabilities are auto-surfaced for review — the job is validation, not data entry.</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System auto-surfaces capability mappings, without requiring manual data entry.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer explicitly approves each capability and detected value. Where mapping is not possible, the developer works from an inferred scaffold rather than starting from scratch.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">If this fails</span>False positives result in downstream defects, requiring wasted development work.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>Developer explicitly approves mapping of capabilities and detected values. If they cannot be mapped, the developer is provided with a temporarily inferred scaffold to continue work.</div>
+          </div>
+        </div>
+        <div class="node mcp">
+          <div class="eyebrow">Step 2 · Build · MCP</div>
+          <div class="jtbd">"I need to map how people phrase requests to what my tools enable, and catch gaps before they become routing errors."</div>
+          <div class="solution">A visual intent-to-tool mapper surfaces routing gaps before anything is live.</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System maps intents to tools visually and flags routing gaps. It provides suggestions to close the gaps.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer resolves flagged gaps before advancing. Where mappings cannot be completed, the developer is provided with an inferred scaffold to continue work.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">If this fails</span>Incomplete mapping results in unintended invocation of tools.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>Unmapped intents are flagged before the developer can continue. Developer is provided with a temporarily inferred scaffold to continue work.</div>
+          </div>
+        </div>
+        <div class="node agent">
+          <div class="eyebrow">Step 2 · Build · Relay</div>
+          <div class="jtbd">"I need to set the exact conditions for handing off and taking back CX to ensure brand compliance."</div>
+          <div class="solution">Trigger conditions and handback rules are set visually, not buried in code.</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System visually maps and identifies routing gaps. It provides suggestions to close the gaps.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer validates or updates trigger conditions and handback rules.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">If this fails</span>Handoff triggers are ambiguous or missing, causing loops or dead ends in CX.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>Trigger conditions must be mutually exclusive and complete before saving.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-connector">↓</div>
+
+  <!-- ═══ STEP 3 · SIMULATE ═══ -->
+  <div class="step-block">
+    <div class="step-trigger" onclick="toggleStep(this)" id="s3">
+      <div class="trigger-bar">
+        <span class="trigger-step-num">Step 3 · Simulate</span>
+        <span class="material-icons mi chevron">expand_more</span>
+      </div>
+      <div class="step-cards">
+        <div class="node api">
+          <div class="eyebrow">Step 3 · Simulate · API</div>
+          <div class="jtbd">"I need to evaluate whether the data yielded the intended response."</div>
+          <div class="solution">Surfaces failure modes quickly and provides a simple way to fix issues.</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System runs the simulation and generates response output and evaluation for review.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer evaluates both the data response and the voice experience, deciding whether to proceed or fix data or CX issues.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">Dev failure</span>The experience passes but the integration silently returns stale or malformed data.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>Response diff view shows actual vs. expected output on every run, surfacing silent data issues immediately.</div>
+            <div class="failure-cx"><span class="fb-label">CX failure</span>Response is technically correct but Alexa+ delivers it in a way that sounds robotic or off-brand.</div>
+            <div class="failure-cx-mit"><span class="fb-label">Mitigation</span>Developer can see and hear the experience and refine it before advancing.</div>
+          </div>
+        </div>
+        <div class="node mcp">
+          <div class="eyebrow">Step 3 · Simulate · MCP</div>
+          <div class="jtbd">"I need to evaluate a routing decision to ensure Alexa+ correctly interprets real user phrasing before I lock in this mapping."</div>
+          <div class="solution">Developer tries real phrases and sees which tool gets selected.</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System generates conversation variants to demonstrate tool selection and routing outputs. It interprets coverage gaps and proactively suggests optimizations.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer judges whether the tool selection is correct for conversational intent and whether the response meets the quality bar. They can update tool or routing specifications if needed.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">Dev failure</span>Tools are either missing or erroneously selected. Edge cases are not identified, causing downstream defects.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>Suggested phrase variants are provided, covering common rephrasings without exhaustive manual testing.</div>
+            <div class="failure-cx"><span class="fb-label">CX failure</span>Stochastic response is generated but does not meet the customer response quality bar.</div>
+            <div class="failure-cx-mit"><span class="fb-label">Mitigation</span>CX issues are flagged as a prompt to revisit response copy in the previous step.</div>
+          </div>
+        </div>
+        <div class="node agent">
+          <div class="eyebrow">Step 3 · Simulate · Relay</div>
+          <div class="jtbd">"I need to walk a conversation through the handoff and catch where the experience breaks down."</div>
+          <div class="solution">A turn-by-turn simulator with visual handoff markers lets developers probe edge cases before testing at scale.</div>
+          <div class="ai-block">
+            <div class="ai-decision"><span class="ai-label decision">Agent Decision</span>System generates customer interactions, triggers handoffs when conditions are met, and flags CX discontinuity between Alexa+ and the agent.</div>
+            <div class="ai-hitl"><span class="ai-label hitl">Human Review</span>Developer inspects the information passed at the handoff point and evaluates whether the CX transition is acceptable. They can update context or handoff phrasing if needed.</div>
+          </div>
+          <div class="failure-block">
+            <div class="failure-if"><span class="fb-label">Dev failure</span>Handoff triggers fire correctly but the agent receives incomplete context. Conversation breaks down immediately after transfer.</div>
+            <div class="failure-mit"><span class="fb-label">Mitigation</span>The information passed at the handoff point is shown. Developer can inspect and update.</div>
+            <div class="failure-cx"><span class="fb-label">CX failure</span>Handoff is technically complete but the customer experience is suboptimal.</div>
+            <div class="failure-cx-mit"><span class="fb-label">Mitigation</span>Flag CX discontinuity between Alexa+ and the agent, prompting the developer to make updates before advancing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRANSITION POINT ═══ -->
+  <svg viewBox="0 0 1060 40" preserveAspectRatio="none" style="width:100%;height:40px;display:block;">
+    <line x1="177" y1="0"  x2="177" y2="20" stroke="#5C6F82" stroke-width="1.5"/>
+    <line x1="530" y1="0"  x2="530" y2="20" stroke="#5C6F82" stroke-width="1.5"/>
+    <line x1="883" y1="0"  x2="883" y2="20" stroke="#5C6F82" stroke-width="1.5"/>
+    <line x1="177" y1="20" x2="883" y2="20" stroke="#5C6F82" stroke-width="1"/>
+    <line x1="530" y1="20" x2="530" y2="40" stroke="#5C6F82" stroke-width="1.5"/>
+  </svg>
+
+  <div class="entry-wrap">
+    <div class="entry-node">
+      <div class="eyebrow">Scope Transition Point</div>
+      <div class="title">Release Lifecycle Experience</div>
+    </div>
+  </div>
+
+  <div class="step-connector">↓</div>
+
+  <!-- ═══ RELEASE LIFECYCLE ═══ -->
+  <div class="lifecycle-wrap">
+
+    <div class="lc-row">
+      <div class="lc-step-label">Step 4 · Test</div>
+      <div class="lc-step-jtbd">"I need a documented, repeatable result I can use to make a go/no-go decision."</div>
+    </div>
+
+    <div class="step-connector">↓</div>
+
+    <div class="lc-row">
+      <div class="lc-step-label">Step 5 · Certify</div>
+      <div class="lc-step-jtbd">"I need external validation that my integration meets the bar before it goes public."</div>
+    </div>
+
+    <div class="step-connector">↓</div>
+
+    <div class="lc-row">
+      <div class="lc-step-label">Step 6 · Deploy</div>
+      <div class="lc-step-jtbd">"I need to learn from real traffic without betting everything at once."</div>
+    </div>
+
+    <div class="step-connector">↓</div>
+
+    <div class="lc-row">
+      <div class="lc-step-label">Step 7 · Monitor</div>
+      <div class="lc-step-jtbd">"I need to know something is wrong before my users do."</div>
+    </div>
+
+  </div>
+
+</div><!-- /canvas -->
+
+<script>
+  const stepIds = ['s1','s2','s3'];
+
+  function toggleStep(el) {
+    el.classList.toggle('open');
+    updateExpandBtn();
+  }
+
+  function toggleAll() {
+    const allOpen = stepIds.every(id => document.getElementById(id).classList.contains('open'));
+    stepIds.forEach(id => document.getElementById(id).classList.toggle('open', !allOpen));
+    updateExpandBtn();
+  }
+
+  function updateExpandBtn() {
+    const allOpen = stepIds.every(id => document.getElementById(id).classList.contains('open'));
+    document.getElementById('expandAllBtn').textContent = allOpen ? 'Collapse all' : 'Expand all';
+  }
+
+  function toggleFailures() {
+    const showing = document.body.classList.toggle('show-failures');
+    const btn = document.getElementById('failureBtn');
+    btn.textContent = showing ? 'Hide failure modes' : 'Show failure modes';
+    btn.classList.toggle('active-fail', showing);
+  }
+
+  function toggleAI() {
+    const showing = document.body.classList.toggle('show-ai');
+    const btn = document.getElementById('aiBtn');
+    btn.textContent = showing ? 'Hide agent decisions' : 'Show agent decisions';
+    btn.classList.toggle('active-ai', showing);
+  }
+
+  function resetAll() {
+    stepIds.forEach(id => document.getElementById(id).classList.remove('open'));
+    document.body.classList.remove('show-failures','show-ai');
+    document.getElementById('failureBtn').textContent = 'Show failure modes';
+    document.getElementById('failureBtn').classList.remove('active-fail');
+    document.getElementById('aiBtn').textContent = 'Show agent decisions';
+    document.getElementById('aiBtn').classList.remove('active-ai');
+    updateExpandBtn();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
