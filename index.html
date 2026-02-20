@@ -24,8 +24,8 @@
 
     --gate:#92400E;  --gate-lt:#FEF3C7; --gate-mid:#F6CC6A;
     --err:#991B1B;   --err-lt:#FEF2F2;  --err-mid:#FCA5A5;
-    --ai:#5B21B6;    --ai-lt:#F5F3FF;   --ai-mid:#C4B5FD;
-    --hitl:#075985;  --hitl-lt:#E0F2FE; --hitl-mid:#7DD3FC;
+    --ai:#3D5A80;    --ai-lt:#EDF2F7;   --ai-mid:#BEC8D8;
+    --hitl:#7A5C38;  --hitl-lt:#F5F0E8; --hitl-mid:#D8C8B0;
 
     --border:#DDE3EC;
     --text:#0F1C2E;
@@ -148,8 +148,8 @@
   .failure-cx-mit{background:var(--surface);color:var(--body);border-top:1px solid var(--err-mid);}
 
   .ai-decision,.ai-hitl{padding:7px 9px;font-size:var(--t-sm);line-height:1.5;}
-  .ai-decision{background:var(--ai-lt);color:var(--ai);border-bottom:1px solid var(--ai-mid);}
-  .ai-hitl{background:var(--hitl-lt);color:var(--hitl);}
+  .ai-decision{background:var(--ai-lt);color:#2D3F52;border-bottom:1px solid var(--ai-mid);border-left:3px solid var(--ai);}
+  .ai-hitl{background:var(--hitl-lt);color:#4A3F33;border-left:3px solid var(--hitl);}
 
   .fb-label{font-style:normal;font-weight:700;font-size:9px;font-family:var(--mono);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:2px;color:var(--err);opacity:0.65;}
   .ai-label{font-style:normal;font-weight:700;font-size:9px;font-family:var(--mono);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:2px;opacity:0.65;}
@@ -234,8 +234,8 @@
   </div>
   <div class="header-right">
     <button class="hdr-btn" id="expandAllBtn" onclick="toggleAll()">Expand all</button>
-    <button class="hdr-btn" id="aiBtn" onclick="toggleAI()">Show agent decisions</button>
-    <button class="hdr-btn" id="failureBtn" onclick="toggleFailures()">Show failure modes</button>
+    <button class="hdr-btn" id="aiBtn" onclick="toggleAI()">Show decision layer</button>
+    <button class="hdr-btn" id="failureBtn" onclick="toggleFailures()">Show risk layer</button>
   </div>
 </header>
 
@@ -498,23 +498,23 @@
   function toggleFailures() {
     const showing = document.body.classList.toggle('show-failures');
     const btn = document.getElementById('failureBtn');
-    btn.textContent = showing ? 'Hide failure modes' : 'Show failure modes';
+    btn.textContent = showing ? 'Hide risk layer' : 'Show risk layer';
     btn.classList.toggle('active-fail', showing);
   }
 
   function toggleAI() {
     const showing = document.body.classList.toggle('show-ai');
     const btn = document.getElementById('aiBtn');
-    btn.textContent = showing ? 'Hide agent decisions' : 'Show agent decisions';
+    btn.textContent = showing ? 'Hide decision layer' : 'Show decision layer';
     btn.classList.toggle('active-ai', showing);
   }
 
   function resetAll() {
     stepIds.forEach(id => document.getElementById(id).classList.remove('open'));
     document.body.classList.remove('show-failures','show-ai');
-    document.getElementById('failureBtn').textContent = 'Show failure modes';
+    document.getElementById('failureBtn').textContent = 'Show risk layer';
     document.getElementById('failureBtn').classList.remove('active-fail');
-    document.getElementById('aiBtn').textContent = 'Show agent decisions';
+    document.getElementById('aiBtn').textContent = 'Show decision layer';
     document.getElementById('aiBtn').classList.remove('active-ai');
     updateExpandBtn();
     window.scrollTo({top:0,behavior:'smooth'});
