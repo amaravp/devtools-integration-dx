@@ -12,7 +12,7 @@ portfolio documentation.
   Google Fonts and Material Icons
 
 ## Live
-https://amaravp.github.io/alexa-dx-flowchart/
+https://amaravp.github.io/devtools-integration-dx/
 
 ## License
 © 2026 Amara Hulslander. All rights reserved. Not for reuse or redistribution without explicit written permission.
